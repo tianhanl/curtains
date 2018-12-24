@@ -110,6 +110,10 @@ class Stage extends Component {
 
   handleDeviceOrientation = deviceOrientationEvent => {};
 
+  handleResize = resizeEvent => {
+    this.updateDimensions();
+  };
+
   detectMode = () => {
     // from http://www.javascriptkit.com/javatutors/navigator.shtml
     const isMobile = navigator.userAgent.match(
@@ -137,6 +141,7 @@ class Stage extends Component {
       }
       default:
     }
+    window.addEventListener('resize', this.handleResize);
   };
 
   removeHandlers = () => {
@@ -154,6 +159,7 @@ class Stage extends Component {
       }
       default:
     }
+    window.removeEventListener('resize', this.handleResize);
   };
 
   render() {
