@@ -1,5 +1,8 @@
 import React, { Component, Children } from 'react';
 
+const ORIENTATION_MODE = 'orientation_mode';
+const POINTER_MODE = 'pointer_mode';
+
 /**
  *
  * Stage component will handle the registration of listeners and provide the
@@ -13,6 +16,7 @@ import React, { Component, Children } from 'react';
 class Stage extends Component {
   // used to determine the size of current container
   ref = React.createRef();
+  mode = null;
   constructor(props) {
     super(props);
     this.state = {
@@ -22,12 +26,13 @@ class Stage extends Component {
   }
 
   componentDidMount = () => {
-    window.addEventListener('pointermove', this.handlePointerMove);
     this.updateDimensions();
+    this.mode = this.detectMode();
+    this.registerHandlers();
   };
 
   componentWillUnmount = () => {
-    window.removeEventListener('pointermove', this.handlePointerMove);
+    this.removeHandlers();
   };
 
   // pass movement in x and y direction to children
@@ -101,6 +106,54 @@ class Stage extends Component {
     this.setState(
       this.calculateMovement(translationPercentageX, translationPercentageY)
     );
+  };
+
+  handleDeviceOrientation = deviceOrientationEvent => {};
+
+  detectMode = () => {
+    // from http://www.javascriptkit.com/javatutors/navigator.shtml
+    const isMobile = navigator.userAgent.match(
+      /(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i
+    );
+    if (!!window.DeviceOrientationEvent && isMobile) {
+      return ORIENTATION_MODE;
+    } else {
+      return POINTER_MODE;
+    }
+  };
+
+  registerHandlers = () => {
+    switch (this.mode) {
+      case ORIENTATION_MODE: {
+        window.addEventListener(
+          'deviceorientation',
+          this.handleDeviceOrientation
+        );
+        break;
+      }
+      case POINTER_MODE: {
+        window.addEventListener('pointermove', this.handlePointerMove);
+        break;
+      }
+      default:
+    }
+  };
+
+  removeHandlers = () => {
+    switch (this.mode) {
+      case ORIENTATION_MODE: {
+        window.removeEventListener(
+          'deviceorientation',
+          this.handleDeviceOrientation
+        );
+        break;
+      }
+      case POINTER_MODE: {
+        window.removeEventListener('pointermove', this.handlePointerMove);
+        break;
+      }
+      default:
+    }
   };
 
   render() {
