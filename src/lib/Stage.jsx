@@ -21,6 +21,15 @@ class Stage extends Component {
     };
   }
 
+  componentDidMount = () => {
+    window.addEventListener('pointermove', this.handlePointerMove);
+    this.updateDimensions();
+  };
+
+  componentWillUnmount = () => {
+    window.removeEventListener('pointermove', this.handlePointerMove);
+  };
+
   // pass movement in x and y direction to children
   transformChildren = children => {
     const { movementX, movementY } = this.state;
@@ -34,6 +43,64 @@ class Stage extends Component {
         });
       });
     }
+  };
+
+  measureWindowDimension = () => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const windowCenterX = windowWidth * 0.5;
+    const windowCenterY = windowHeight * 0.5;
+    const windowRadiusX = Math.max(windowCenterX, windowWidth - windowCenterX);
+    const windowRadiusY = Math.max(windowCenterY, windowHeight - windowCenterY);
+    return {
+      windowWidth,
+      windowHeight,
+      windowCenterX,
+      windowCenterY,
+      windowRadiusX,
+      windowRadiusY
+    };
+  };
+
+  measureElementDimension = () => {
+    const element = this.ref.current;
+    const boundingClientRect = element.getBoundingClientRect();
+    const elementWidth = boundingClientRect.width;
+    const elementHeight = boundingClientRect.height;
+    return {
+      elementWidth,
+      elementHeight
+    };
+  };
+
+  updateDimensions = () => {
+    this.setState({
+      ...this.measureWindowDimension(),
+      ...this.measureElementDimension()
+    });
+  };
+
+  calculateMovement = (translationPercentageX, translationPercentageY) => {
+    const { elementHeight, elementWidth } = this.state;
+    return {
+      movementX: elementWidth * translationPercentageX,
+      movementY: elementHeight * translationPercentageY
+    };
+  };
+
+  handlePointerMove = pointerEvent => {
+    const {
+      windowCenterX,
+      windowCenterY,
+      windowRadiusX,
+      windowRadiusY
+    } = this.state;
+    const { clientX, clientY } = pointerEvent;
+    const translationPercentageX = (clientX - windowCenterX) / windowRadiusX;
+    const translationPercentageY = (clientY - windowCenterY) / windowRadiusY;
+    this.setState(
+      this.calculateMovement(translationPercentageX, translationPercentageY)
+    );
   };
 
   render() {

@@ -14,6 +14,13 @@ function Demo() {
           </div>
         )}
       </Stage>
+      <Stage>
+        {(movementX, movementY) => (
+          <span>
+            x:{movementX} y:{movementY}
+          </span>
+        )}
+      </Stage>
     </div>
   );
 }
