@@ -20,13 +20,26 @@ const POINTER_MODE = 'pointer_mode';
 class Stage extends Component {
   // used to determine the size of current container
   ref = React.createRef();
+  // used to indicate which mode is the stage
   mode = null;
+  defaultState = {
+    movementX: 0,
+    movementY: 0,
+    windowWidth: 0,
+    windowHeight: 0,
+    windowCenterX: 0,
+    windowCenterY: 0,
+    windowRadiusX: 0,
+    windowRadiusY: 0,
+    elementWidth: 0,
+    elementHeight: 0,
+    calibrationX: null,
+    calibrationY: null
+  };
+
   constructor(props) {
     super(props);
-    this.state = {
-      movementX: 0,
-      movementY: 0
-    };
+    this.state = this.defaultState;
   }
 
   componentDidMount = () => {
@@ -114,7 +127,26 @@ class Stage extends Component {
     );
   };
 
-  handleDeviceOrientation = deviceOrientationEvent => {};
+  handleDeviceOrientation = deviceOrientationEvent => {
+    const { maxViewingAngle } = this.props;
+    const { calibrationX, calibrationY } = this.state;
+    const { beta, gamma } = deviceOrientationEvent;
+    const translationPercentageX = gamma / maxViewingAngle;
+    const translationPercentageY = beta / maxViewingAngle;
+    if ((calibrationX === calibrationY) === null) {
+      this.setState({
+        calibrationX: translationPercentageX,
+        calibrationY: translationPercentageY
+      });
+    } else {
+      this.setState(
+        this.calculateMovement(
+          translationPercentageX - calibrationX,
+          translationPercentageY - calibrationY
+        )
+      );
+    }
+  };
 
   handleResize = resizeEvent => {
     this.updateDimensions();
@@ -191,14 +223,17 @@ Stage.propTypes = {
   scalarY: PropTypes.number,
   // determine the percentage position of origin relative to top left
   originX: PropTypes.number,
-  originY: PropTypes.number
+  originY: PropTypes.number,
+  // max viewing angle used in orientation calculation
+  maxViewingAngle: PropTypes.number
 };
 
 Stage.defaultProps = {
   scalarX: 0.1,
   scalarY: 0.1,
   originX: 0.5,
-  originY: 0.5
+  originY: 0.5,
+  maxViewingAngle: 30
 };
 
 export default Stage;
