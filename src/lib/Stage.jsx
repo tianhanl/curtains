@@ -1,4 +1,5 @@
 import React, { Component, Children } from 'react';
+import PropTypes from 'prop-types';
 
 const ORIENTATION_MODE = 'orientation_mode';
 const POINTER_MODE = 'pointer_mode';
@@ -9,6 +10,9 @@ const POINTER_MODE = 'pointer_mode';
  * relative translation regarding user interaction to its children. It will
  * listen to pointer move for desktop devices and orientation change for mobile
  * device
+ *
+ * This component will pass the calculated movement realtive to the dimensinos
+ * of the container to its children
  *
  * @class Stage
  * @extends {Component}
@@ -51,10 +55,11 @@ class Stage extends Component {
   };
 
   measureWindowDimension = () => {
+    const { originX, originY } = this.props;
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    const windowCenterX = windowWidth * 0.5;
-    const windowCenterY = windowHeight * 0.5;
+    const windowCenterX = windowWidth * originX;
+    const windowCenterY = windowHeight * originY;
     const windowRadiusX = Math.max(windowCenterX, windowWidth - windowCenterX);
     const windowRadiusY = Math.max(windowCenterY, windowHeight - windowCenterY);
     return {
@@ -87,9 +92,10 @@ class Stage extends Component {
 
   calculateMovement = (translationPercentageX, translationPercentageY) => {
     const { elementHeight, elementWidth } = this.state;
+    const { scalarX, scalarY } = this.props;
     return {
-      movementX: elementWidth * translationPercentageX,
-      movementY: elementHeight * translationPercentageY
+      movementX: elementWidth * translationPercentageX * scalarX,
+      movementY: elementHeight * translationPercentageY * scalarY
     };
   };
 
@@ -163,7 +169,14 @@ class Stage extends Component {
   };
 
   render() {
-    const { children, ...rest } = this.props;
+    const {
+      children,
+      scalarX,
+      scalarY,
+      originX,
+      originY,
+      ...rest
+    } = this.props;
     return (
       <div ref={this.ref} {...rest}>
         {this.transformChildren(children)}
@@ -171,5 +184,21 @@ class Stage extends Component {
     );
   }
 }
+
+Stage.propTypes = {
+  // globally scalling the translation
+  scalarX: PropTypes.number,
+  scalarY: PropTypes.number,
+  // determine the percentage position of origin relative to top left
+  originX: PropTypes.number,
+  originY: PropTypes.number
+};
+
+Stage.defaultProps = {
+  scalarX: 0.1,
+  scalarY: 0.1,
+  originX: 0.5,
+  originY: 0.5
+};
 
 export default Stage;
