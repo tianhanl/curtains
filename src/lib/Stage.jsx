@@ -207,6 +207,7 @@ class Stage extends Component {
       scalarY,
       originX,
       originY,
+      maxViewingAngle,
       ...rest
     } = this.props;
     return (
