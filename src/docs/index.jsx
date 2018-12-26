@@ -7,16 +7,38 @@ function Demo() {
   return (
     <div>
       <h1>Demo with examples of the component</h1>
-      <Stage style={{ height: 60, position: 'realtive' }}>
+      <Stage
+        id={'stage'}
+        style={{
+          height: '80vh',
+          position: 'realtive',
+          background: 'gray',
+          overflow: 'hidden'
+        }}
+        relativeToElement
+        clipToElement
+      >
         <Curtain
           style={{
             height: 20,
             width: 20,
             background: 'red',
-            top: 20,
+            position: 'absolute',
+            top: '50%',
             left: '50%'
           }}
-          relativeRate={1}
+          relativeRate={0.2}
+        />
+        <Curtain
+          style={{
+            height: 20,
+            width: 20,
+            background: 'blue',
+            position: 'absolute',
+            top: '50%',
+            left: '50%'
+          }}
+          relativeRate={0.5}
         />
       </Stage>
     </div>

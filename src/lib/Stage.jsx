@@ -33,6 +33,14 @@ class Stage extends Component {
     windowRadiusY: 0,
     elementWidth: 0,
     elementHeight: 0,
+    elementTop: 0,
+    elementLeft: 0,
+    elementBottom: 0,
+    elementRight: 0,
+    elementCenterX: 0,
+    elementCenterY: 0,
+    elementRadiusX: 0,
+    elementRadiusY: 0,
     calibrationX: null,
     calibrationY: null
   };
@@ -86,13 +94,36 @@ class Stage extends Component {
   };
 
   measureElementDimension = () => {
+    const { originX, originY } = this.props;
     const element = this.ref.current;
-    const boundingClientRect = element.getBoundingClientRect();
-    const elementWidth = boundingClientRect.width;
-    const elementHeight = boundingClientRect.height;
+    const domRect = element.getBoundingClientRect();
+    const elementWidth = domRect.width;
+    const elementHeight = domRect.height;
+    const elementTop = domRect.top;
+    const elementLeft = domRect.left;
+    const elementBottom = domRect.bottom;
+    const elementRight = domRect.right;
+    const elementCenterX = (elementLeft + elementWidth) * originX;
+    const elementCenterY = (elementTop + elementHeight) * originY;
+    const elementRadiusX = Math.max(
+      elementWidth * originX,
+      elementWidth * (1 - originX)
+    );
+    const elementRadiusY = Math.max(
+      elementHeight * originY,
+      elementHeight * (1 - originY)
+    );
     return {
       elementWidth,
-      elementHeight
+      elementHeight,
+      elementTop,
+      elementLeft,
+      elementBottom,
+      elementRight,
+      elementCenterX,
+      elementCenterY,
+      elementRadiusX,
+      elementRadiusY
     };
   };
 
@@ -113,15 +144,42 @@ class Stage extends Component {
   };
 
   handlePointerMove = pointerEvent => {
+    const { relativeToElement, clipToElement } = this.props;
+    const { clientX, clientY } = pointerEvent;
     const {
       windowCenterX,
       windowCenterY,
       windowRadiusX,
-      windowRadiusY
+      windowRadiusY,
+      elementCenterX,
+      elementCenterY,
+      elementRadiusX,
+      elementRadiusY,
+      elementTop,
+      elementLeft,
+      elementRight,
+      elementBottom
     } = this.state;
-    const { clientX, clientY } = pointerEvent;
-    const translationPercentageX = (clientX - windowCenterX) / windowRadiusX;
-    const translationPercentageY = (clientY - windowCenterY) / windowRadiusY;
+    // clip if needed
+    if (
+      clipToElement &&
+      (clientX < elementLeft ||
+        clientX > elementRight ||
+        clientY < elementTop ||
+        clientY > elementBottom)
+    ) {
+      return;
+    }
+
+    let translationPercentageX = 0;
+    let translationPercentageY = 0;
+    if (relativeToElement) {
+      translationPercentageX = (clientX - elementCenterX) / elementRadiusX;
+      translationPercentageY = (clientY - elementCenterY) / elementRadiusY;
+    } else {
+      translationPercentageX = (clientX - windowCenterX) / windowRadiusX;
+      translationPercentageY = (clientY - windowCenterY) / windowRadiusY;
+    }
     this.setState(
       this.calculateMovement(translationPercentageX, translationPercentageY)
     );
@@ -208,6 +266,8 @@ class Stage extends Component {
       originX,
       originY,
       maxViewingAngle,
+      relativeToElement,
+      clipToElement,
       ...rest
     } = this.props;
     return (
@@ -219,14 +279,18 @@ class Stage extends Component {
 }
 
 Stage.propTypes = {
-  // globally scalling the translation
+  // globally translation scaling
   scalarX: PropTypes.number,
   scalarY: PropTypes.number,
-  // determine the percentage position of origin relative to top left
+  // the percentage position of origin relative to top left
   originX: PropTypes.number,
   originY: PropTypes.number,
   // max viewing angle used in orientation calculation
-  maxViewingAngle: PropTypes.number
+  maxViewingAngle: PropTypes.number,
+  // is movement determined based on element's center
+  relativeToElement: PropTypes.bool,
+  // should pointer outsize the element region be clipped
+  clipToElement: PropTypes.bool
 };
 
 Stage.defaultProps = {
@@ -234,7 +298,9 @@ Stage.defaultProps = {
   scalarY: 0.1,
   originX: 0.5,
   originY: 0.5,
-  maxViewingAngle: 30
+  maxViewingAngle: 30,
+  relativeToElement: false,
+  clipToElement: false
 };
 
 export default Stage;
