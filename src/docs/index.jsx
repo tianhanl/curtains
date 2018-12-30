@@ -41,6 +41,13 @@ function Demo() {
           relativeRate={0.5}
         />
       </Stage>
+      <Stage>
+        {(movementX, movementY) => (
+          <div>
+            movementX : {movementX}, movementY : {movementY}
+          </div>
+        )}
+      </Stage>
     </div>
   );
 }

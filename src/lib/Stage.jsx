@@ -189,18 +189,18 @@ class Stage extends Component {
     const { maxViewingAngle } = this.props;
     const { calibrationX, calibrationY } = this.state;
     const { beta, gamma } = deviceOrientationEvent;
-    const translationPercentageX = gamma / maxViewingAngle;
-    const translationPercentageY = beta / maxViewingAngle;
+    const normalizedBeta = beta.toFixed(1);
+    const normalizedGamma = gamma.toFixed(1);
     if ((calibrationX === calibrationY) === null) {
       this.setState({
-        calibrationX: translationPercentageX,
-        calibrationY: translationPercentageY
+        calibrationX: normalizedGamma,
+        calibrationY: normalizedBeta
       });
     } else {
       this.setState(
         this.calculateMovement(
-          translationPercentageX - calibrationX,
-          translationPercentageY - calibrationY
+          (normalizedGamma - calibrationX) / maxViewingAngle,
+          (normalizedBeta - calibrationY) / maxViewingAngle
         )
       );
     }
