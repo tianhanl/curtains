@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 import { Stage, Curtain } from '../../lib';
+import MovementInfoDisplay from './components/MovementInfoDisplay';
 import './styles.css';
 
 function Demo() {
@@ -18,6 +19,7 @@ function Demo() {
         relativeToElement
         clipToElement
       >
+        <MovementInfoDisplay />
         <Curtain
           style={{
             height: 20,
@@ -40,13 +42,6 @@ function Demo() {
           }}
           relativeRate={0.5}
         />
-      </Stage>
-      <Stage>
-        {(movementX, movementY) => (
-          <div>
-            movementX : {movementX}, movementY : {movementY}
-          </div>
-        )}
       </Stage>
     </div>
   );

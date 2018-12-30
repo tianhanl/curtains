@@ -61,7 +61,7 @@ class Stage extends Component {
   };
 
   // pass movement in x and y direction to children
-  transformChildren = children => {
+  passMovementToChildren = children => {
     const { movementX, movementY } = this.state;
     if (typeof children === 'function') {
       return children(movementX, movementY);
@@ -272,7 +272,7 @@ class Stage extends Component {
     } = this.props;
     return (
       <div ref={this.ref} {...rest}>
-        {this.transformChildren(children)}
+        {this.passMovementToChildren(children)}
       </div>
     );
   }
